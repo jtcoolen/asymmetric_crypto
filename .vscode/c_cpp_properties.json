@@ -1,0 +1,25 @@
+{
+  "configurations": [
+      {
+          "name": "Linux",
+          "includePath": [
+              "${workspaceFolder}/**",
+              "/nix/store/7wy23fyz7lszd7izsla09d5bzmc57x22-gnumake-4.3/include",
+              "/nix/store/2zchy9mdx3kk166i98cx5sriq2c1bdsn-glibc-2.33-55/include",
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/include",
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/lib/gcc/x86_64-unknown-linux-gnu/10.3.0/include",
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/lib/gcc/x86_64-unknown-linux-gnu/10.3.0/include-fixed",
+
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/lib/gcc/x86_64-unknown-linux-gnu/10.3.0/include/**",
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/include/**",
+              "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/lib/gcc/x86_64-unknown-linux-gnu/10.3.0/include-fixed/**",
+              "/nix/store/2zchy9mdx3kk166i98cx5sriq2c1bdsn-glibc-2.33-55/include/**"
+              
+          ],
+          "defines": [],
+          "intelliSenseMode": "gcc-x64",
+          "compilerPath": "/nix/store/dlni53myj53kx20pi4yhm7p68lw17b07-gcc-10.3.0/bin/gcc"
+      }
+  ],
+  "version": 4
+}

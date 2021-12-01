@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "stdlib.h": "c",
+    "finite_field.h": "c",
+    "inttypes.h": "c",
+    "stdint.h": "c",
+    "cstdint": "c"
+  }
+}
