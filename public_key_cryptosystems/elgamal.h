@@ -24,7 +24,7 @@ struct ElGamal_signature_public_key {
   int64_t generator_pow; // g^a
 };
 
-struct ElGaml_signature_private_key {
+struct ElGamal_signature_private_key {
   int64_t pow; // a
 };
 
@@ -45,10 +45,15 @@ struct finite_field_element *
 ElGamal_decrypt(const struct ElGamal_ciphertext *ciphertext,
                 const struct ElGamal_private_key *private_key);
 
+void ElGamal_signature_keypair(
+    int64_t prime_field_characteristic, int64_t Zp_generator,
+    struct ElGamal_signature_private_key *private_key,
+    struct ElGamal_signature_public_key *public_key);
+
 struct ElGamal_signature *
 ElGamal_sign(const void *plaintext, size_t plaintext_length,
              const struct ElGamal_signature_public_key *public_key,
-             const struct ElGaml_signature_private_key *private_key);
+             const struct ElGamal_signature_private_key *private_key);
 
 int ElGamal_check_signature(
     const void *plaintext, size_t plaintext_length,

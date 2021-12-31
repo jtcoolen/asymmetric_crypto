@@ -86,8 +86,7 @@ int64_t randrange(int64_t lower, int64_t upper) {
 }
 
 struct polynomial_in_Fp *
-prime_field_element_power(const struct polynomial_in_Fp *pfe,
-                          uint64_t power) {
+polynomial_in_Fp_power(const struct polynomial_in_Fp *pfe, uint64_t power) {
   struct polynomial_in_Fp *res =
       polynomial_in_Fp_new(pfe->capacity, pfe->characteristic);
   res->coefficients[0] = 1;
@@ -122,7 +121,7 @@ finite_field_element_power(const struct finite_field_element *ffe,
   struct finite_field_element *ffe_copy = finite_field_element_copy(ffe);
 
   struct finite_field_element *tmp;
-  
+
   while (power) {
     if (power & 1) {
       tmp = finite_field_element_multiplication(res, ffe_copy);

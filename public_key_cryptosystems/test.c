@@ -22,14 +22,14 @@ int main(void) {
   // ElGamal
   // polisirreducible(('x^6+'x^2+'x+2)*Mod(1,719)) = 1
 
-  // GF(719^6), of multiplicative order 719^6-1 =
+  // F_q, q=719^6, of multiplicative order 719^6-1 =
   // 138157142546011680
 
   int64_t prime = 719; // 719 Sophie Germain prime
   struct polynomial_in_Fp *poly =
       polynomial_in_Fp_from_array((int64_t[]){0, 1, 1}, 3, prime);
-  struct polynomial_in_Fp *mod = polynomial_in_Fp_from_array(
-      (int64_t[]){1, 1, 1, 0, 0, 0, 1}, 7, prime);
+  struct polynomial_in_Fp *mod =
+      polynomial_in_Fp_from_array((int64_t[]){1, 1, 1, 0, 0, 0, 1}, 7, prime);
   struct finite_field_element ffe;
   ffe.poly = polynomial_in_Fp_copy(poly);
   ffe.mod = polynomial_in_Fp_copy(mod);
@@ -42,19 +42,28 @@ int main(void) {
 
   printf("ciphertext: \n");
   polynomial_in_Fp_print(eg_ciphertext->ffe2->poly);
-  
+
   struct finite_field_element *eg_decrypt =
       ElGamal_decrypt(eg_ciphertext, &eg_privk);
-      
+
   printf("\nrecovered plaintext: \n");
   polynomial_in_Fp_print(eg_decrypt->poly);
   printf("\n");
 
-  /*printf("El Gamal signature:\n");
+  printf("El Gamal signature:\n");
+  struct ElGamal_signature_public_key eg_sig_pubk;
+  struct ElGamal_signature_private_key eg_sig_privk;
+  ElGamal_signature_keypair(719, 11, &eg_sig_privk,
+                            &eg_sig_pubk); // 11 generator of Z/719Z
 
-  struct ElGamal_signature *eg_sig = ElGamal_sign("hello world!", 13, &eg_pubk, &eg_privk);
-  printf("Checking signature : %d", ElGamal_check_signature("hello world!", 13, eg_sig, &eg_pubk));
-  */
+  char *msg = "hello world!";
+  size_t msg_len = 13;
+  struct ElGamal_signature *eg_sig =
+      ElGamal_sign(msg, msg_len, &eg_sig_pubk, &eg_sig_privk);
+
+  printf("(r,s)=(%ld, %ld)\n", eg_sig->ipfe1, eg_sig->ipfe2);
+  printf("Checking signature : %d",
+         ElGamal_check_signature("hello world!", msg_len, eg_sig, &eg_sig_pubk));
 
   return 0;
 }

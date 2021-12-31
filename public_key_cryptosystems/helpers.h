@@ -15,8 +15,7 @@ int64_t modular_inverse(int64_t a, int64_t b);
 int64_t randrange(int64_t lower, int64_t upper);
 
 struct polynomial_in_Fp *
-prime_field_element_power(const struct polynomial_in_Fp *pfe,
-                          uint64_t power);
+polynomial_in_Fp_power(const struct polynomial_in_Fp *pfe, uint64_t power);
 
 struct finite_field_element *
 finite_field_element_power(const struct finite_field_element *ffe,
