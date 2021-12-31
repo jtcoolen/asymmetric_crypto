@@ -1,3 +1,4 @@
+#include <dsa.h>
 #include <elgamal.h>
 #include <finite_field.h>
 #include <rsa.h>
@@ -63,7 +64,18 @@ int main(void) {
 
   printf("(r,s)=(%ld, %ld)\n", eg_sig->ipfe1, eg_sig->ipfe2);
   printf("Checking signature : %d",
-         ElGamal_check_signature("hello world!", msg_len, eg_sig, &eg_sig_pubk));
+         ElGamal_check_signature(msg, msg_len, eg_sig, &eg_sig_pubk));
+
+  printf("\nDSA signature:\n");
+  struct DSA_public_key dsa_pubk;
+  struct DSA_private_key dsa_privk;
+
+  DSA_keypair(&dsa_privk, &dsa_pubk);
+  printf("\n");
+  mpz_out_str(stdout, 10, *dsa_pubk.p);
+
+  struct DSA_signature sig;
+  DSA_sign(msg, msg_len, &dsa_pubk, &dsa_privk, &sig);
 
   return 0;
 }

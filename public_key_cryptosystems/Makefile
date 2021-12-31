@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wpointer-arith -Wextra -Wpedantic -O3 -I. -I../finite_field
+CFLAGS = -Wall -Wpointer-arith -Wextra -Wpedantic -Og -I. -I../finite_field
+LDLIBS = -lgmp
 
 .SUFFIXES: .c .o
 
@@ -9,8 +10,8 @@ all:\
 	$(PRGS)
 
 test:\
-	test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o
-	$(CC) test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o -o $@
+	test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o dsa.o
+	$(CC) $(LDLIBS) test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o dsa.o -o $@
 
 finite_field.o:
 	$(CC) $(CFLAGS) -c ../finite_field/finite_field.c
