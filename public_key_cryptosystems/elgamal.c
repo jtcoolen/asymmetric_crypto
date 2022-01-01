@@ -80,11 +80,12 @@ ElGamal_sign(const void *plaintext, size_t plaintext_length,
     signature->ipfe1 = pow_mod(public_key->generator, k,
                                public_key->prime_field_characteristic);
 
-    char h[4];
-    blake2b(h, 4, NULL, 0, // optional secret key
-            plaintext, plaintext_length);
     uint32_t hash;
-    memcpy(&hash, h, 4);
+    char h[sizeof hash];
+    blake2b(h, sizeof hash, NULL, 0, // optional secret key
+            plaintext, plaintext_length);
+
+    memcpy(&hash, h, sizeof hash);
 
     signature->ipfe2 = modulo(
         (hash - private_key->pow * signature->ipfe1) *
@@ -108,11 +109,14 @@ int ElGamal_check_signature(
     return 0;
   }
 
-  char h[4];
-  blake2b(h, 4, NULL, 0, // optional secret key
-          plaintext, plaintext_length);
   uint32_t hash;
-  memcpy(&hash, h, 4);
+  char h[sizeof hash];
+  blake2b(h, sizeof hash, NULL, 0, // optional secret key
+          plaintext, plaintext_length);
+
+  memcpy(&hash, h, sizeof hash);
+
+  memcpy(&hash, h, sizeof hash);
 
   return pow_mod(public_key->generator, hash,
                  public_key->prime_field_characteristic) ==

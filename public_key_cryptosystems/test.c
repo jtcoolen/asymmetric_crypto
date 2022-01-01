@@ -71,12 +71,12 @@ int main(void) {
   struct DSA_private_key dsa_privk;
 
   DSA_keypair(&dsa_privk, &dsa_pubk);
-  printf("\n");
+  // printf("\n");
   // mpz_out_str(stdout, 10, *dsa_pubk.p);
   struct DSA_signature sig;
   DSA_sign(msg, msg_len, &dsa_pubk, &dsa_privk, &sig);
 
-  printf("\n\ns=");
+  printf("s=");
   mpz_out_str(stdout, 10, sig.s);
   printf("\nr=");
   mpz_out_str(stdout, 10, sig.r);
