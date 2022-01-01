@@ -4,20 +4,23 @@
 #include <gmp.h>
 #include <stdlib.h>
 
+#define qLEN 160
+#define pLEN 1024
+
 struct DSA_public_key {
-  mpz_t *p;
-  mpz_t *q;
-  mpz_t *generator_cyclic_subgroup_order_q;
-  mpz_t *generator_pow;
+  mpz_t p;
+  mpz_t q;
+  mpz_t generator_cyclic_subgroup_order_q;
+  mpz_t generator_pow;
 };
 
 struct DSA_private_key {
-  mpz_t *x;
+  mpz_t x;
 };
 
 struct DSA_signature {
-  mpz_t *r;
-  mpz_t *s;
+  mpz_t r;
+  mpz_t s;
 };
 
 void DSA_keypair(struct DSA_private_key *private_key,

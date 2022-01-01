@@ -11,9 +11,9 @@ void DSA_keypair(struct DSA_private_key *private_key,
 
   gmp_randstate_t rd_state;
   gmp_randinit_mt(rd_state);
-  mpz_urandomb(q, rd_state, 160);
+  mpz_urandomb(q, rd_state, qLEN);
 
-  mpz_urandomb(p, rd_state, 1024);
+  mpz_urandomb(p, rd_state, pLEN);
   mpz_mod(mod, p, q);
   mpz_sub(p, p, mod);
   mpz_add_ui(p, p, 1);
@@ -22,7 +22,7 @@ void DSA_keypair(struct DSA_private_key *private_key,
   mpz_inits(g, g0, pdec, pow, NULL);
   do {
     mpz_urandomb(g0, rd_state,
-                 1024); // TODO: for now 0 <= g0 <= p - 1, ensure 2 < g0 < p - 2
+                 pLEN); // TODO: for now 0 <= g0 <= p - 1, ensure 2 < g0 < p - 2
     mpz_sub_ui(pdec, p, 1);
     mpz_divexact(pow, p, q);
     mpz_powm(g, g0, pow, p);
@@ -32,36 +32,39 @@ void DSA_keypair(struct DSA_private_key *private_key,
 
   mpz_t x, y;
   mpz_inits(x, y, NULL);
-  mpz_urandomb(x, rd_state, 160);
+  mpz_urandomb(x, rd_state, qLEN);
+  // mpz_out_str(stdout, 10, x);
   mpz_powm(y, g, x, p);
-  mpz_out_str(stdout, 10, *&p);
 
   gmp_randclear(rd_state);
 
-  public_key->p = &p;
-  public_key->q = &q;
-  public_key->generator_cyclic_subgroup_order_q = &g;
-  public_key->generator_pow = &y;
+  mpz_inits(public_key->p, public_key->q,
+            public_key->generator_cyclic_subgroup_order_q,
+            public_key->generator_pow, private_key->x, NULL);
 
-  private_key->x = &x;
+  mpz_set(public_key->p, p);
+  mpz_set(public_key->q, q);
+  mpz_set(public_key->generator_cyclic_subgroup_order_q, g);
+  mpz_set(public_key->generator_pow, y);
+
+  mpz_set(private_key->x, x);
 }
 
 void DSA_sign(const void *plaintext, size_t plaintext_length,
               const struct DSA_public_key *public_key,
               const struct DSA_private_key *private_key,
               struct DSA_signature *signature) {
-  mpz_t k, r, s, rtmp, mpz_hash, tmp2, tmp3, tmp4;
-  mpz_inits(k, r, s, rtmp, mpz_hash, tmp2, tmp3, tmp4, NULL);
+  mpz_t k, r, s, rtmp, mpz_hash, tmp2, tmp3, tmp4, kinv;
+  mpz_inits(k, r, s, rtmp, mpz_hash, tmp2, tmp3, tmp4, kinv, NULL);
 
   gmp_randstate_t rd_state;
   gmp_randinit_mt(rd_state);
 
   do {
-    mpz_urandomb(k, rd_state, 160);
-
-    mpz_powm(rtmp, k, *public_key->generator_cyclic_subgroup_order_q,
-             *public_key->p);
-    mpz_mod(r, rtmp, *public_key->p);
+    mpz_urandomb(k, rd_state, qLEN);
+    mpz_powm(rtmp, public_key->generator_cyclic_subgroup_order_q, k,
+             public_key->p);
+    mpz_mod(r, rtmp, public_key->q);
 
     char h[4];
     blake2b(h, 4, NULL, 0, // optional secret key
@@ -70,20 +73,19 @@ void DSA_sign(const void *plaintext, size_t plaintext_length,
     memcpy(&hash, h, 4);
     mpz_set_ui(mpz_hash, hash);
 
-    mpz_invert(rtmp, k, *public_key->q);
-    mpz_mul(tmp3, *private_key->x, r);
+    mpz_invert(kinv, k, public_key->q);
+    mpz_mul(tmp3, private_key->x, r);
     mpz_add(tmp2, mpz_hash, tmp3);
-    mpz_mul(tmp4, tmp2, tmp3);
-    mpz_mod(s, tmp4, *public_key->q);
-    printf("\n\ns=");
-    mpz_out_str(stdout, 10, s);
-    printf("\nr=");
-    mpz_out_str(stdout, 10, r);
+    mpz_mul(rtmp, tmp2, kinv);
+
+    mpz_mod(s, rtmp, public_key->q);
   } while (mpz_cmp_ui(r, 0) == 0 || mpz_cmp_ui(s, 0) == 0);
 
-  signature = malloc(sizeof(struct DSA_signature));
-  signature->r = &r;
-  signature->s = &s;
+  mpz_clears(k, rtmp, mpz_hash, tmp2, tmp3, tmp4, kinv, NULL);
+  gmp_randclear(rd_state);
+
+  mpz_set(signature->r, r);
+  mpz_set(signature->s, s);
 }
 
 int DSA_check_signature(const void *plaintext, size_t plaintext_length,
@@ -95,9 +97,12 @@ int DSA_check_signature(const void *plaintext, size_t plaintext_length,
     return 0;
   }*/
 
-  mpz_t w, u1, u2, v, tmp1, tmp2, tmp3, mpz_hash;
+  mpz_t w, u1, u2, v, g, y, mpz_hash;
+  mpz_inits(w, u1, u2, v, g, y, mpz_hash, NULL);
 
-  mpz_invert(w, *signature->s, *public_key->q);
+  mpz_invert(w, signature->s, public_key->q);
+  printf("\n");
+  mpz_out_str(stdout, 10, public_key->q);
 
   char h[4];
   blake2b(h, 4, NULL, 0, // optional secret key
@@ -106,16 +111,18 @@ int DSA_check_signature(const void *plaintext, size_t plaintext_length,
   memcpy(&hash, h, 4);
   mpz_set_ui(mpz_hash, hash);
 
-  mpz_mul(tmp1, mpz_hash, w);
-  mpz_mod(u1, tmp1, *public_key->q);
-  mpz_mul(tmp2, *signature->r, w);
-  mpz_mod(u2, tmp2, *public_key->q);
+  mpz_mul(u1, mpz_hash, w);
+  mpz_mod(u1, u1, public_key->q);
+  mpz_mul(u2, signature->r, w);
+  mpz_mod(u2, u2, public_key->q);
 
-  mpz_powm(tmp1, *public_key->generator_cyclic_subgroup_order_q, u1,
-           *public_key->p);
-  mpz_powm(tmp2, *public_key->generator_pow, u2, *public_key->p);
-  mpz_mul(tmp3, tmp1, tmp2);
-  mpz_mod(v, tmp3, *public_key->q);
+  mpz_powm(g, public_key->generator_cyclic_subgroup_order_q, u1, public_key->p);
+  mpz_powm(y, public_key->generator_pow, u2, public_key->p);
+  mpz_mul(v, g, y);
+  mpz_mod(v, v, public_key->p);
+  mpz_mod(v, v, public_key->q);
+  printf("\n");
+  mpz_out_str(stdout, 10, w);
 
-  return mpz_cmp(*signature->r, v) == 0;
+  return mpz_cmp(signature->r, v) == 0;
 }

@@ -72,10 +72,17 @@ int main(void) {
 
   DSA_keypair(&dsa_privk, &dsa_pubk);
   printf("\n");
-  mpz_out_str(stdout, 10, *dsa_pubk.p);
-
+  // mpz_out_str(stdout, 10, *dsa_pubk.p);
   struct DSA_signature sig;
   DSA_sign(msg, msg_len, &dsa_pubk, &dsa_privk, &sig);
+
+  printf("\n\ns=");
+  mpz_out_str(stdout, 10, sig.s);
+  printf("\nr=");
+  mpz_out_str(stdout, 10, sig.r);
+
+  printf("\nChecking signature : %d",
+         DSA_check_signature(msg, msg_len, &sig, &dsa_pubk));
 
   return 0;
 }
