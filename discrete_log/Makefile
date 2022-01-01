@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wpointer-arith -Wextra -Wpedantic -Og -I. -I../finite_field -I../blake2b
+CFLAGS = -Wall -Wpointer-arith -Wextra -Og -I. -I../hashmap/include
 LDLIBS = -lgmp
 
 .SUFFIXES: .c .o
@@ -10,14 +10,11 @@ all:\
 	$(PRGS)
 
 test:\
-	test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o dsa.o
-	$(CC) $(LDLIBS) test.o rsa.o helpers.o finite_field.o elgamal.o blake2b.o dsa.o -o $@
+	test.o discrete_log.o hashmap.o
+	$(CC) $(LDLIBS) test.o discrete_log.o hashmap.o -o $@
 
-finite_field.o:
-	$(CC) $(CFLAGS) -c ../finite_field/finite_field.c
-
-blake2b.o:
-	$(CC) $(CFLAGS) -c ../blake2b/blake2b.c
+hashmap.o:
+	$(CC) $(CFLAGS) -c ../hashmap/src/hashmap.c
 
 .c.o: \
 	$*.h $*.c

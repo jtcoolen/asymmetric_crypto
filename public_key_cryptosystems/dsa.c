@@ -22,7 +22,7 @@ void DSA_keypair(struct DSA_private_key *private_key,
     mpz_mod(mod, p, q);
     mpz_sub(p, p, mod);
     mpz_add_ui(p, p, 1);
-  } while (!mpz_probab_prime_p(p, 100));
+  } while (!mpz_probab_prime_p(p, 50));
 
   mpz_t g, g0, pdec, pow;
   mpz_inits(g, g0, pdec, pow, NULL);
