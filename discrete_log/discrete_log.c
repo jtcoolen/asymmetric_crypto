@@ -9,12 +9,12 @@
 //#include <uthash.h>
 
 struct babystep_pair {
-  char *hash;
+  char *key;
   mpz_t exponent; // a
   mpz_t power;    // g^a
 };
 
-char *hash(const mpz_t a) {
+char *get_key(const mpz_t a) {
   size_t s = mpz_sizeinbase(a, 10);
   char *str = malloc(s + 1);
   gmp_snprintf(str, s + 1, "%Zd", a);
@@ -48,9 +48,9 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
     mpz_inits(p->exponent, p->power, NULL);
     mpz_set(p->exponent, j);
     mpz_set(p->power, a);
-    p->hash = hash(a);
+    p->key = get_key(a);
 
-    hashmap_put(&babystep_pairs, p->hash, p);
+    hashmap_put(&babystep_pairs, p->key, p);
 
     mpz_mul(a, a, generator);
     mpz_mod(a, a, cyclic_group_order);
@@ -68,18 +68,18 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
 
   mpz_set(h_pow, h);
   mpz_set_ui(j, 0);
-  char *hashed_pow;
+  char *pow_key;
   while (mpz_cmp(j, group_order_sqrt) < 0) {
-    hashed_pow = hash(h_pow);
-    p = hashmap_get(&babystep_pairs, hashed_pow);
-    free(hashed_pow);
+    pow_key = get_key(h_pow);
+    p = hashmap_get(&babystep_pairs, pow_key);
+    free(pow_key);
     if (p) {
       mpz_out_str(stdout, 10, p->exponent);
       mpz_mul(j, j, group_order_sqrt);
       mpz_add(log, j, p->exponent);
 
       hashmap_foreach_data(p, &babystep_pairs) {
-        free(p->hash);
+        free(p->key);
         free(p);
       }
       hashmap_cleanup(&babystep_pairs);
@@ -94,7 +94,7 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
   }
 
   hashmap_foreach_data(p, &babystep_pairs) {
-    free(p->hash);
+    free(p->key);
     free(p);
   }
   hashmap_cleanup(&babystep_pairs);
