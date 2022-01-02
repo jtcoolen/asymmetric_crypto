@@ -6,7 +6,6 @@
 
 #include <discrete_log.h>
 #include <hashmap.h>
-//#include <uthash.h>
 
 struct babystep_pair {
   char *key;
@@ -74,7 +73,6 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
     p = hashmap_get(&babystep_pairs, pow_key);
     free(pow_key);
     if (p) {
-      mpz_out_str(stdout, 10, p->exponent);
       mpz_mul(j, j, group_order_sqrt);
       mpz_add(log, j, p->exponent);
 
@@ -100,4 +98,76 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
   hashmap_cleanup(&babystep_pairs);
   mpz_clears(group_order_sqrt, group_order_sqrt_neg, a, j, gen_pow, h_pow,
              NULL);
+}
+
+unsigned long partition(mpz_t y) {
+  mpz_t res;
+  mpz_init(res);
+  mpz_mod_ui(res, y, 3);
+  unsigned long res_ui = mpz_get_ui(res);
+  mpz_clear(res);
+  return res_ui;
+}
+
+void f_seq_terms(mpz_t y, mpz_t a, mpz_t b, mpz_t cyclic_group_order,
+                 mpz_t generator, mpz_t pow) {
+  mpz_t ord;
+  mpz_init(ord);
+  mpz_sub_ui(ord, cyclic_group_order, 1);
+  switch (partition(y)) {
+  case 0:
+    mpz_mul(y, y, y);
+    mpz_mod(y, y, cyclic_group_order);
+    mpz_mul_ui(a, a, 2);
+    mpz_mod(a, a, ord);
+    mpz_mul_ui(b, b, 2);
+    mpz_mod(b, b, ord);
+    break;
+  case 1:
+    mpz_mul(y, y, generator);
+    mpz_mod(y, y, cyclic_group_order);
+    mpz_add_ui(a, a, 1);
+    mpz_mod(a, a, ord);
+    break;
+  case 2:
+    mpz_mul(y, y, pow);
+    mpz_mod(y, y, cyclic_group_order);
+    mpz_add_ui(b, b, 1);
+    mpz_mod(b, b, ord);
+    break;
+  }
+}
+
+void pollard_rho(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
+                 mpz_t log) {
+
+  mpz_t yk, ak, bk, y2k, a2k, b2k;
+  mpz_inits(yk, ak, bk, y2k, a2k, b2k, NULL);
+  mpz_set_ui(yk, 1);
+  mpz_set_ui(ak, 0);
+  mpz_set_ui(bk, 0);
+
+  mpz_set(y2k, yk);
+  mpz_set(a2k, ak);
+  mpz_set(b2k, bk);
+
+  while (1) {
+    // tortoise step
+    f_seq_terms(yk, ak, bk, cyclic_group_order, generator, h);
+    
+    // hare steps
+    f_seq_terms(y2k, a2k, b2k, cyclic_group_order, generator, h);
+    f_seq_terms(y2k, a2k, b2k, cyclic_group_order, generator, h);
+
+    if (mpz_cmp(yk, y2k) == 0) {
+      // we obtained a collision  g^(a2k-ak) = h^(bk-b2k)
+      // thus h=g^x with x = (ak-a2k)/(b2k-bk)
+      mpz_sub(ak, ak, a2k);
+      mpz_sub(bk, b2k, bk);
+      mpz_invert(bk, bk, cyclic_group_order);
+      mpz_mul(log, ak, bk);
+      mpz_mod(log, log, cyclic_group_order);
+      return;
+    }
+  }
 }
