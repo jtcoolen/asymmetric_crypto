@@ -14,9 +14,9 @@ int main(void) {
   printf("log=");
   mpz_out_str(stdout, 10, log);
 
-  mpz_set_ui(h, 229); //229);
-  mpz_set_ui(gen, 2);// 2);
-  mpz_set_ui(order, 383); //383);
+  mpz_set_ui(h, 229);     // 229);
+  mpz_set_ui(gen, 2);     // 2);
+  mpz_set_ui(order, 383); // 383);
   printf("\nPollard's Rho (O(1) memory)\n");
   pollard_rho(order, gen, h, log);
   printf("log=");

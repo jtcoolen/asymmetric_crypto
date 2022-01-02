@@ -100,6 +100,23 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
              NULL);
 }
 
+int solve_congruence(mpz_t a, mpz_t b, mpz_t mod, mpz_t res) {
+  mpz_t gcd, m, s, t, zero;
+  mpz_inits(gcd, m, s, t, zero, NULL);
+  mpz_gcdext(gcd, s, t, a, mod);
+
+  mpz_mod(m, b, gcd);
+  if (mpz_cmp(m, zero) != 0) {
+    return -1;
+  }
+
+  // for(i=1,gcd-1, print((b/gcd)*s+i*(mod/gcd)) )
+  mpz_divexact(res, b, gcd);
+  mpz_mul(res, res, s);
+  mpz_mod(res, res, mod);
+  return 1;
+}
+
 unsigned long partition(mpz_t y) {
   mpz_t res;
   mpz_init(res);
@@ -154,19 +171,20 @@ void pollard_rho(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
   while (1) {
     // tortoise step
     f_seq_terms(yk, ak, bk, cyclic_group_order, generator, h);
-    
+
     // hare steps
     f_seq_terms(y2k, a2k, b2k, cyclic_group_order, generator, h);
     f_seq_terms(y2k, a2k, b2k, cyclic_group_order, generator, h);
 
     if (mpz_cmp(yk, y2k) == 0) {
       // we obtained a collision  g^(a2k-ak) = h^(bk-b2k)
-      // thus h=g^x with x = (ak-a2k)/(b2k-bk)
+      // thus h=g^x with (b2k-bk)x = (ak-a2k) mod (n-1)
       mpz_sub(ak, ak, a2k);
       mpz_sub(bk, b2k, bk);
-      mpz_invert(bk, bk, cyclic_group_order);
-      mpz_mul(log, ak, bk);
-      mpz_mod(log, log, cyclic_group_order);
+      mpz_t mod;
+      mpz_init(mod);
+      mpz_sub_ui(mod, cyclic_group_order, 1);
+      solve_congruence(bk, ak, mod, log);
       return;
     }
   }
