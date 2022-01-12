@@ -1,4 +1,5 @@
-#include <stdint.h>
+#include <quadratic_residues.h>
+#include <gmp.h>
 
 uint64_t pow_mod(uint64_t base, uint64_t power, uint64_t mod) {
   uint64_t res = 1;
@@ -16,7 +17,7 @@ int64_t find_factor(int64_t a) {
   
 }
 
-int legendre_symbol(int64_t a, int64_t p) {  
+/*int legendre_symbol(int64_t a, int64_t p) {  
   
   if (a > p) {
     a %= p;
@@ -36,7 +37,7 @@ int legendre_symbol(int64_t a, int64_t p) {
   }
 
   if (!is_prime(a)) {
-    return 
+    return ;
   }
 
   // a is prime
@@ -46,5 +47,6 @@ int legendre_symbol(int64_t a, int64_t p) {
   }
 
   return legendre_symbol(p, a);
+}*/
 
-}
+void tonelli_shanks()
