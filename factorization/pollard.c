@@ -17,12 +17,10 @@ void factor_rho_pollard(mpz_t n, mpz_t factor)
   mpz_set_ui(xk, 1);
   mpz_set_ui(xj, 1);
 
-  uint64_t j = 1;
   uint64_t k = 2;
 
-  while(1) {
+  for(uint64_t j = 0;j < UINT64_MAX;j++) {
     f(xj, xj, n);
-    j++;
 
     if (j == k) {
       mpz_set(xk, xj);
