@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
-int legendre_symbol(int64_t a, int64_t p);
+int64_t jacobi(int64_t n, int64_t k);
+
+int64_t shanks_tonelli(int64_t a, int64_t p);
 
 #endif

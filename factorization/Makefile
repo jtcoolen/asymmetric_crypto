@@ -10,8 +10,8 @@ all:\
 	$(PRGS)
 
 test:\
-	test.o pollard.o
-	$(CC) $(LDLIBS) test.o pollard.o -o $@
+	test.o pollard.o quadratic_sieve.o
+	$(CC) $(LDLIBS) test.o pollard.o quadratic_sieve.o -o $@
 
 .c.o: \
 	$*.h $*.c
