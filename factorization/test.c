@@ -14,13 +14,14 @@ int main(void) {
   gmp_printf("fac=%Zu\n", fac);*/
 
   
+  //mpz_init_set_str(n, "2041", 10);
   mpz_init_set_str(n, "1042387", 10);
   unsigned long long P = 50;
   unsigned long long A = 500;
 
-  printf("sqrt(302) in Z/2081 Z %ld", shanks_tonelli(302, 2081));
-  //quadratic_sieve(n, P, A);
+  quadratic_sieve(n, P, A);
     
   mpz_clears(fac, n, NULL);
+
   return 0;
 }
