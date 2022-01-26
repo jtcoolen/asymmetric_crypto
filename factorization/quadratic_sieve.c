@@ -39,54 +39,8 @@ void swap_rows(char *matrix, size_t nrow, size_t ncol, size_t row1, size_t row2)
   }
 }
 
-size_t get_pivot(char *matrix, size_t nrow, size_t ncol, size_t l) {
-  size_t m = abs(matrix(l, 0));
-  if (m == 1) return 0;
-  size_t pivot = nrow;
-  for (size_t i = 1; i < ncol; i++) {
-    if (abs(matrix(l, i)) > m) {
-      m = abs(matrix(l, i));
-      pivot = i;
-      break;
-    }
-  }
-  return pivot;
-}
-
-size_t get_pivot2(char *matrix, size_t nrow, size_t ncol, size_t h, size_t k) {
-  size_t m = abs(matrix(h, k));
-  size_t pivot = 0;
-  for (size_t i = h; i < nrow; i++) {
-    if (abs(matrix(i, k)) > m) {
-      m = abs(matrix(i, k));
-      pivot = i;
-      break;
-    }
-  }
-  return pivot;
-}
-
 // Gaussian elimination over GF(2)
 void gaussian_elimination(char *matrix, size_t nrow, size_t ncol) {
-  /*size_t h = 1; // pivot ligne
-  size_t k = 1; // pivot colonne
-
-  while (h < nrow && k < ncol) {
-    size_t pivot = get_pivot2(matrix, nrow, ncol, h,k);
-    if (matrix(pivot, k) == 0) {
-      k++;
-    } else {
-      swap_rows(matrix, nrow, ncol, pivot, h);
-      for (size_t i = h + 1; i < nrow; i++) {
-	matrix(i, k) = 0;
-	for (size_t j = k + 1; j < ncol; j++) {
-	  matrix(i, j) ^= matrix(h, j);
-	}
-      }
-      h++;
-      k++;
-    }
-    }*/
   for(int k=0; k<nrow; k++) {
     if (matrix(k,k) == 0) { // Swap with pivot if current diagonal is 0
       for(int l = k; l < nrow; l++) {
@@ -102,14 +56,9 @@ void gaussian_elimination(char *matrix, size_t nrow, size_t ncol) {
       if (matrix(i,k)) {
 	for(int j=0; j<ncol; j++)
 	  matrix(i,j) ^= matrix(k,j);
-	//for(size_t i=0; i<A.size(); i++)
-	//   print_range(A[i]);
-	//std::cout << '\n';
       }
     }
-    }
-  
-  
+  }
 }
 
 void transpose(const char *matrix, size_t nrow, size_t ncol, char *transpose) {
@@ -118,10 +67,6 @@ void transpose(const char *matrix, size_t nrow, size_t ncol, char *transpose) {
       MatCoeff(transpose, j, i, nrow) = MatCoeff(matrix, i, j, ncol);
     }
   }
-}
-
-void right_kernel(char *matrix, size_t n, size_t m) {
-  
 }
 
 void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
@@ -147,10 +92,6 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
       i++;
     }
   }
-  /*for (size_t i = 0; i < B_len; i++) {
-    gmp_printf("i=%Zu ", B[i]);
-  }
-  printf("\n");*/
 
   struct smooth_candidate *S = malloc(A * sizeof(struct smooth_candidate));
   if (S == NULL) {
@@ -191,12 +132,6 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     }
   }
 
-  /*for (size_t i = 0; i < A; i++) {
-    if (mpz_cmp_ui(S[i].remaining_factor, 1) == 0) {
-      gmp_printf("i=%ld, %Zu, t=%Zu \n", i, S[i].number, S[i].t);
-    }
-    }*/
-
   char *smooth_num_vectors = malloc((B_len +1) * B_len * sizeof(char));
   if (smooth_num_vectors == NULL) {
     return;
@@ -218,11 +153,6 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     size_t j = 0;
     for (; offset < A && j < B_len + 1; offset++) {
       if (mpz_cmp_ui(S[offset].remaining_factor, 1) == 0) {
-	//gmp_printf("i=%ld, %Zu, t=%Zu \n", i, S[i].remaining_factor, S[i].t);
-	/*for (size_t j = 0; j < B_len; j++) {
-	  printf("%d", (int)S[offset].basis_factors_parity[j]); 
-	  }*/
-	//gmp_printf("   . %Zu\n", S[offset].number);
 	memcpy(&smooth_num_vectors[j * B_len], S[offset].basis_factors_parity, B_len * sizeof(char));
 	smooth_num_indices[j] = offset;
 	j++;
@@ -250,42 +180,12 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
       return;
     }
 
-    //printf("\nBlen=%d\n", B_len);
-
     transpose(smooth_num_vectors, B_len + 1, B_len, smooth_num_vectors2);
-
-    /*printf("\n");
-    for (size_t i = 0; i < B_len; i++) {
-      for (size_t j = 0; j < B_len+1; j++) {
-	printf("%d", smooth_num_vectors2[i *( B_len+1) + j]); 
-      }
-      printf("\n");
-      }*/
-  
-    /*transpose(smooth_num_vectors, B_len + 1, B_len, smooth_num_vectors2);
-
-      printf("\n");
-      for (size_t i = 0; i < B_len ; i++) {
-      for (size_t j = 0; j < 2*B_len+1; j++) {
-      printf("%d", smooth_num_vectors2[i *( B_len+1) + j]); 
-      }
-      printf("\n");
-      }*/
-
     gaussian_elimination(smooth_num_vectors2, B_len, B_len+1);
-
-    /*printf("\n");
-    for (size_t i = 0; i < B_len; i++) {
-      for (size_t j = 0; j < B_len+1; j++) {
-	printf("%d", smooth_num_vectors2[i *( B_len+1) + j]); 
-      }
-      printf("\n");
-      }*/
   
     int f;
     for(f=0; f<B_len; f++) {
       if (MatCoeff(smooth_num_vectors2,f,f,B_len+1) != 1) {
-	//printf("f=%d\n", f);
 	break;
       }
     }
@@ -312,22 +212,12 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     for(int i=0; i<f; i++){
       nullspace[i] = MatCoeff(smooth_num_vectors2, i, f, (B_len+1));
     }
-    //printf("\nf=%d\n", f);
-
-    /*for(size_t i=0; i<B_len+1; i++) {
-      printf(" %d-", nullspace[i]);
-    }
-    printf("\n");
-    */
-
-  
+   
     mpz_set_ui(u, 1);
     mpz_set_ui(v, 1);
     for(size_t i=0; i<B_len+1; i++) {
       if (nullspace[i] == 1)
 	{
-	  //printf("idx=%d i=%d ", smooth_num_indices[i], i);
-	  //gmp_printf("t=%Zu", S[smooth_num_indices[i]].t);
 	  mpz_mul(u, u, S[smooth_num_indices[i]].t);
 	  mpz_mul(v, v, S[smooth_num_indices[i]].number);
 	}
