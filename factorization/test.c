@@ -8,10 +8,10 @@ int main(void) {
 
   mpz_init_set_str(n, "52590354472497239257283147", 10);
   factor_rho_pollard(n, fac);
-  gmp_printf("fac=%Zu\n", fac);
+  gmp_printf("factor_rho_pollard(%Zu)=%Zu\n", n, fac);
   mpz_init_set_str(n, "52590354464570687296135717939981", 10);
   factor_rho_pollard(n, fac);
-  gmp_printf("fac=%Zu\n", fac);
+  gmp_printf("factor_rho_pollard(%Zu)=%Zu\n", n, fac);
   
   mpz_init_set_str(n, "1042387", 10);
   unsigned long long P = 50;
