@@ -69,7 +69,7 @@ void transpose(const char *matrix, size_t nrow, size_t ncol, char *transpose) {
   }
 }
 
-void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
+void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A, mpz_t fac1, mpz_t fac2) {
   size_t B_len = basis_len(P, n);
   //printf("len=%ld\n", B_len);
   mpz_t *B = malloc(B_len * sizeof(mpz_t));
@@ -141,10 +141,8 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     return;
   }
 
-
-  
-  mpz_t u, v, fac, diff;
-  mpz_inits(u, v, fac, diff, NULL);
+  mpz_t u, v, diff;
+  mpz_inits(u, v, diff, NULL);
   
   int done = 0;
 
@@ -162,18 +160,6 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     if (offset == A - 1) {
       return;
     }
-
-
-  
-    /*printf("\n");
-
-    for (size_t i = 0; i < B_len + 1; i++) {
-      for (size_t j = 0; j < B_len; j++) {
-	printf("%d", smooth_num_vectors[i * B_len + j]); 
-      }
-      printf("\n");
-    }
-    printf("\n");*/
 
     char *smooth_num_vectors2 = malloc((B_len + 1) * B_len * sizeof(char));
     if (smooth_num_vectors2 == NULL) {
@@ -205,7 +191,6 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
 
     char *nullspace = malloc((B_len+1) * sizeof(*nullspace));
     memset(nullspace, 0, B_len+1);
-    // Subject to change
     // First free variable is 1, rest are 0
     nullspace[f] = 1;
 
@@ -228,12 +213,11 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A) {
     mpz_mod(u, u, n);
 
     mpz_sub(diff, v, u);
-    mpz_gcd(fac, diff, n);
-    if (mpz_cmp(n, fac) != 0) {
+    mpz_gcd(fac1, diff, n);
+    if (mpz_cmp(n, fac1) != 0) {
+      mpz_add(diff, v, u);
+      mpz_gcd(fac2, diff, n);
       done = 1;
     }
   }
-
-  gmp_printf("u=%Zu, v=%Zu\nGCD=%Zu\n\n", u, v, fac);
-
 }
