@@ -1,6 +1,6 @@
 #include <gmp.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void f(mpz_t r, mpz_t a, mpz_t n) {
@@ -9,8 +9,7 @@ void f(mpz_t r, mpz_t a, mpz_t n) {
   mpz_mod(r, r, n);
 }
 
-void factor_rho_pollard(mpz_t n, mpz_t factor)
-{
+void factor_rho_pollard(mpz_t n, mpz_t factor) {
   mpz_t xk, xj, diff, gcd;
   mpz_inits(xk, xj, diff, gcd, NULL);
 
@@ -19,7 +18,7 @@ void factor_rho_pollard(mpz_t n, mpz_t factor)
 
   uint64_t k = 2;
 
-  for(uint64_t j = 0;j < UINT64_MAX;j++) {
+  for (uint64_t j = 0; j < UINT64_MAX; j++) {
     f(xj, xj, n);
 
     if (j == k) {

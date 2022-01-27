@@ -8,6 +8,7 @@ int64_t shanks_tonelli(int64_t a, int64_t p);
 
 void gauss_eliminate(char *a, char *b, char *x, int n);
 
-void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A, mpz_t fac1, mpz_t fac2);
+void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
+                     mpz_t fac1, mpz_t fac2);
 
 #endif
