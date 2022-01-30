@@ -86,13 +86,8 @@ ElGamal_gen_keys(E, P) = {
 }
 
 ElGamal_encrypt(E, Q, P, msg) = {
-  my(C = [oo, oo]);
-  my(k=0);
-  while(C[1] == oo || C[2] == oo,
-    k = random(ellcard2(E) - 2) + 2;
-    C = [ellpointmulbin(E, P, k), ellpointadd(E, msg, ellpointmulbin(E, Q, k))];
-  );
-  C
+  my(k = random(ellcard2(E) - 2) + 2);
+  [ellpointmulbin(E, P, k), ellpointadd(E, msg, ellpointmulbin(E, Q, k))]
 }
 
 ElGamal_decrypt(E, d, ciphertext) = {
@@ -122,4 +117,5 @@ test() = {
       print("Success: ", success)));
 }
 
+\\ boucle infinie! Control+C pour la quitter!
 test()
