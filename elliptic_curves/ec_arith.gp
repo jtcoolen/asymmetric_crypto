@@ -71,12 +71,10 @@ ellpointmul2rary(E, P, n, r) = {
   my(i = logint(n, 2^r));
   my(z, c, s, h);
   my(Q = oo);
-  
   while(i != -1,
   
     c = (n >> (i * r)) % (2^r);
-    [s, h] = decomp(c);
-    print("h = ", h);
+    if(c != 0, [s, h] = decomp(c));
     
     if(c != 0,
       Q = ellpointmulbin(E, Q, 2^(r - s));
@@ -129,7 +127,7 @@ ElGamal_encrypt(E, Q, P, msg) = {
 }
 
 ElGamal_decrypt(E, d, ciphertext) = {
-  ellpointsub(E, ciphertext[2], ellpointmulbin(E, ciphertext[1], d))
+  ellpointsub(E, ciphertext[2], ellpointmul2rary(E, ciphertext[1], d, 4))
 }
 
 test() = {
