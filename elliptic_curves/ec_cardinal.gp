@@ -10,9 +10,10 @@ ellcard_naive(E) = {
 }
 
 ellcard_legendre(E) = {
+  if(E.p == 2 || E.p == 3, return -1); \\ ne fonctionne qu'en caractéristique différente de 2 et 3
   my(c = 0);
   for(x = 0, E.p - 1,
-    c += kronecker(lift(x^3 + E.a4 * x + E.a6), Es.p) + 1
+    c += kronecker(lift(x^3 + E.a4 * x + E.a6), E.p) + 1
   );
   c++; \\ point à l'infini
   c
