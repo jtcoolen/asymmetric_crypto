@@ -52,6 +52,44 @@ ellpointmulbin(E, P, n) = {
   Q
 }
 
+decomp(a) = {
+  my(s = 0);
+  my(h = a);
+  while(h % 2 == 0, h = (h >> 1); s++);
+  [s, h]
+}
+
+\\ multiplication 2^r-aire modifiée d'un point
+ellpointmul2rary(E, P, n, r) = {
+  my(multiplesP = vector(2^r+1, i, [0, 0]));
+  multiplesP[1] = P;
+  multiplesP[2] = ellpointdup(E, P);
+
+  \\ précalcul, j commence à 1 pour remplir toutes les cases d'indice impair
+  for(j = 1, 2^(r - 1), multiplesP[2 * j + 1] = ellpointadd(E, multiplesP[2 * j - 1], multiplesP[2]));
+  
+  my(i = logint(n, 2^r));
+  my(z, c, s, h);
+  my(Q = oo);
+  
+  while(i != -1,
+  
+    c = (n >> (i * r)) % (2^r);
+    [s, h] = decomp(c);
+    print("h = ", h);
+    
+    if(c != 0,
+      Q = ellpointmulbin(E, Q, 2^(r - s));
+      Q = ellpointadd(E, Q, multiplesP[h]));
+      
+    if(c == 0, s = r);
+    
+    Q = ellpointmulbin(E, Q, 2^s);
+    i--;
+  );
+  Q
+}
+
 ellcard_naive(E) = {
   my(c = 0);
   for(i = 0, E.p - 1,
