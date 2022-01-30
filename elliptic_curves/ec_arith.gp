@@ -130,6 +130,57 @@ ElGamal_decrypt(E, d, ciphertext) = {
   ellpointsub(E, ciphertext[2], ellpointmul2rary(E, ciphertext[1], d, 4))
 }
 
+p = randomprime(2^1000);
+a = Mod(2, p);
+Es = ellinit([a^4, a^6], a);
+
+time(E,P,n,i)={
+  my(start=getabstime());
+  ellpointmul2rary(E,P,n,i);
+  getabstime()-start;
+}
+
+\\ temps en nanosecondes
+\\ mesure du temps d'exécution de la multiplication 2^r-aire
+P=random(Es); for(n=199, 200, for(i=1,17,print(time(Es,P,n,i))));
+\*
+1
+0
+1
+1
+1
+2
+3
+6
+11
+16
+29
+48
+93
+183
+363
+727
+1456*/
+\\ mesure du temps d'exécution de la multiplication binaire
+time2(E,P,n)={
+  my(start=getabstime());
+  ellpointmulbin(E,P,n);
+  getabstime()-start;
+}
+P=random(Es); for(n=199, 209, print(time2(Es,P,n)));
+\*0
+0
+1
+0
+0
+0
+1
+0
+0
+0
+0*/
+\\ On constate que le temps d'exécution de la multiplication 2^r-aire se dégrade sensiblement pour des valeurs croissantes de r (à partir de r >= 8)
+
 test() = {
   success = 1;
   while(success,
