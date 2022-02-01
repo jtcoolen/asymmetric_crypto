@@ -1,4 +1,5 @@
-\\ Version d'ElGamal qui opère sur des courbes elliptiques définies sur des corps premiers
+\\ Version d'ElGamal qui opère sur des courbes elliptiques définies sur des corps finis
+
 
 \\ Le point à l'infini est représenté par oo dans nos calculs
 \\ On travaille en coordonnées affines
@@ -17,8 +18,6 @@ ellpointadd(E, P1, P2) = {
     s = elladd(E, P1, P2);
     if(s == [0], s = oo);
     return(s));
-  P1 = Mod(P1,	Es.p);
-  P2 = Mod(P2, Es.p);
   if(P1 == ellpointneg(E, P2), return(oo));
   if(P1 == P2,
     r = (3 * P1[1]^2 + E.a4) / (2 * P1[2]);
@@ -90,24 +89,6 @@ ellpointmul2rary(E, P, n, r) = {
   Q
 }
 
-ellisoncurve2(E, P) = (P[2]^2 + E[1] * P[1] * P[2] + E[3] * P[2]) == (P[1]^3 + E[2] * P[1]^2 + E[4] * P[1] + E[5]);
-
-ellcard_naive(E) = {
-  my(c = 1, i, j); \\ point à l'infini
-  for(i = 0, E.p - 1, for(j = 0, E.p - 1, if(ellisoncurve2(E,[i,j]), c++))); c
-}
-
-\\ ne fonctionne qu'en caractéristique différente de 2 et 3 !
-ellcard_legendre(E) = {
-  my(c = 1, i); \\ point à l'infini
-  for(i = 0, E.p - 1, c += kronecker(lift(i^3 + E.a4 * i + E.a6), E.p) + 1); c
-}
-
-ellcard2(E) = {
-  if(E.p == 2 || E.p == 3, return(ellcard_naive(E)));
-  ellcard_legendre(E)
-}
-
 \\ Q: public key
 \\ d: private key
 ElGamal_gen_keys(E, P) = {
@@ -116,7 +97,7 @@ ElGamal_gen_keys(E, P) = {
 }
 
 ElGamal_encrypt(E, Q, P, msg) = {
-  my(k = random(ellcard2(E) - 2) + 2);
+  my(k = random(ellcard(E) - 2) + 2);
   [ellpointmulbin(E, P, k), ellpointadd(E, msg, ellpointmulbin(E, Q, k))]
 }
 
@@ -124,63 +105,11 @@ ElGamal_decrypt(E, d, ciphertext) = {
   ellpointsub(E, ciphertext[2], ellpointmul2rary(E, ciphertext[1], d, 4))
 }
 
-p = randomprime(2^1000);
-a = Mod(2, p);
-Es = ellinit([a^4, a^6], a);
-
-time(E,P,n,i)={
-  my(start=getabstime());
-  ellpointmul2rary(E,P,n,i);
-  getabstime()-start;
-}
-
-\\ temps en nanosecondes
-\\ mesure du temps d'exécution de la multiplication 2^r-aire
-P=random(Es); for(n=199, 200, for(i=1,17,print(time(Es,P,n,i))));
-\*
-1
-0
-1
-1
-1
-2
-3
-6
-11
-16
-29
-48
-93
-183
-363
-727
-1456*/
-\\ mesure du temps d'exécution de la multiplication binaire
-time2(E,P,n)={
-  my(start=getabstime());
-  ellpointmulbin(E,P,n);
-  getabstime()-start;
-}
-P=random(Es); for(n=199, 209, print(time2(Es,P,n)));
-\*0
-0
-1
-0
-0
-0
-1
-0
-0
-0
-0*/
-\\ On constate que le temps d'exécution de la multiplication 2^r-aire se dégrade sensiblement pour des valeurs croissantes de r (à partir de r >= 8)
-
 test() = {
-  success = 1;
-  while(success,
-    p = randomprime(2^10);
-    a = Mod(2, p);
-    Es = ellinit([a^4, a^6], a);
+  for(i=0,5,
+    n = randomprime(2^10)^2;
+    g = ffprimroot(ffgen(n));
+    Es = ellinit([g^3, g^4]);
     if(Es != [],
       print("Es = ", Es);
       P = [0]; \\ point à l'infini selon PARI/GP
@@ -198,5 +127,4 @@ test() = {
       print("Success: ", success)));
 }
 
-\\ boucle infinie! Control+C pour la quitter!
 test()
