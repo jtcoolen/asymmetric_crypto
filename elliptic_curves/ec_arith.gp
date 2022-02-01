@@ -61,15 +61,19 @@ decomp(a) = {
   [s, h]
 }
 
-\\ multiplication 2^r-aire modifiée d'un point
-ellpointmul2rary(E, P, n, r) = {
+
+ellpointmul2raryPRECALC(E, P, n, r) = {
   my(multiplesP = vector(2^r+1, i, [0, 0]));
   multiplesP[1] = P;
   multiplesP[2] = ellpointdup(E, P);
 
   \\ précalcul, j commence à 1 pour remplir toutes les cases d'indice impair
   for(j = 1, 2^(r - 1), multiplesP[2 * j + 1] = ellpointadd(E, multiplesP[2 * j - 1], multiplesP[2]));
-  
+  multiplesP
+}
+
+\\ multiplication 2^r-aire modifiée d'un point
+ellpointmul2rary(E, P, n, r, multiplesP) = {
   my(i = logint(n, 2^r));
   my(z, c, s, h);
   my(Q = oo);
@@ -128,16 +132,18 @@ p = randomprime(2^1000);
 a = Mod(2, p);
 Es = ellinit([a^4, a^6], a);
 
-time(E,P,n,i)={
+time(E,P,n,i,multiplesP)={
   my(start=getabstime());
-  ellpointmul2rary(E,P,n,i);
+  ellpointmul2rary(E,P,n,i,multiplesP);
   getabstime()-start;
 }
 
 \\ temps en nanosecondes
-\\ mesure du temps d'exécution de la multiplication 2^r-aire
-P=random(Es); for(n=199, 200, for(i=1,17,print(time(Es,P,n,i))));
+\\ mesure du temps d'exécution de la multiplication 2^r-aire (on omet le précalcul)
+P = random(Es);
+for(n=199, 199, for(r = 1, 12, multiplesP = ellpointmul2raryPRECALC(Es, P, n, r); print("r = ", r, " ; temps (en ns) = ", time(Es,P,n,r,multiplesP))));
 \*
+AVEC PRECALCUL:
 1
 0
 1
@@ -154,7 +160,25 @@ P=random(Es); for(n=199, 200, for(i=1,17,print(time(Es,P,n,i))));
 183
 363
 727
-1456*/
+1456
+
+SANS COMPTER LE PRECALCUL:
+r = 1 ; temps (en ns) = 0
+r = 2 ; temps (en ns) = 1
+r = 3 ; temps (en ns) = 0
+r = 4 ; temps (en ns) = 0
+r = 5 ; temps (en ns) = 0
+r = 6 ; temps (en ns) = 0
+r = 7 ; temps (en ns) = 0
+r = 8 ; temps (en ns) = 0
+r = 9 ; temps (en ns) = 0
+r = 10 ; temps (en ns) = 0
+r = 11 ; temps (en ns) = 0
+r = 12 ; temps (en ns) = 0
+
+On en conclut que le précalcul domine très largement le reste de la multiplication 2^r-aire
+Donc ce dernier algo est préférable lorsque l'on est amené à multiplier de nombreuses fois une courbe
+*/
 \\ mesure du temps d'exécution de la multiplication binaire
 time2(E,P,n)={
   my(start=getabstime());
@@ -173,7 +197,6 @@ P=random(Es); for(n=199, 209, print(time2(Es,P,n)));
 0
 0
 0*/
-\\ On constate que le temps d'exécution de la multiplication 2^r-aire se dégrade sensiblement pour des valeurs croissantes de r (à partir de r >= 8)
 
 test() = {
   success = 1;
