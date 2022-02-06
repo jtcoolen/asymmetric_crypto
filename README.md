@@ -7,7 +7,7 @@ En premier lieu, il faut cloner le sous-module contenant une implémentation de 
 ## Arborescence du dossier
 
 - TP 1: dossiers `integer_sqrt` et `karatsuba`
-  - Calcul de racine carré entière en O(log^3 n) opérations élémentaires (dans les faits en 0(log^2 n) car l'on opère sur des entiers de 64 bits où les opérations bits à bits s'effectuent en temps O(1)).
+  - Calcul de racine carré entière en O(log^3 n) opérations élémentaires (dans les faits en 0(log^2 n) car l'on opère sur des entiers de 64 bits où les opérations bits à bits s'effectuent en temps constant).
   - Algorithme de Karatsuba
 
 - TP 2: dossier `finite_field`
