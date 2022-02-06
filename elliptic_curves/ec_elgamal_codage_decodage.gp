@@ -6,6 +6,11 @@
 
 \\ ENCODAGE:
 
+
+ascii_to_int(str) = [ if(v < 65, v -= 48, v -= 55) | v<-Vec(Vecsmall(str))]
+
+int_to_ascii(i) = strchr([ if(v <= 9, v += 48, v += 55) | v<-i ])
+
 code(E, q, m, kappa) = {
   z=0;
   for(i = m * kappa + 1, m * kappa + kappa,
@@ -15,8 +20,21 @@ code(E, q, m, kappa) = {
   return(-1);
 }
 
-decode(E, P, kappa, M) = divrem(lift(P[1]), kappa)[1]
+decode(E, P, kappa, M) = x = lift(P[1]); if(x % kappa == 0, return(x/kappa + 1), return(divrem(x, kappa)[1]))
 
+code_str(E, q, str, kappa) = [ code(E, q, m, kappa) | m<-ascii_to_int(str) ]
+
+decode_points(E, points, kappa, M) = int_to_ascii([ decode(E, P, kappa, M) | P<-points ])
+
+
+f=ffgen(751)
+E=ellinit([-1,188],znprimroot(751))
+
+test = ascii_to_int("STOP007");
+print(test);
+
+test2 = [[Mod(361,751),Mod(383,751)],[Mod(241,751),Mod(605,751)],[Mod(201,751),Mod(380,751)],[Mod(461,751),Mod(467,751)],[Mod(581,751),Mod(395,751)]];
+print(decode_points(E, test2, 20, 36))
 
 
 \\ Le point à l'infini est représenté par oo dans nos calculs
@@ -123,26 +141,33 @@ ElGamal_decrypt(E, d, ciphertext) = {
   ellpointsub(E, ciphertext[2], ellpointmul2rary(E, ciphertext[1], d, 4))
 }
 
+ElGamal_encrypt_str(E, q, kappa, M, Q, P, str) = decode_points(E, [ ElGamal_encrypt(E, Q, P, e) | e<-code_str(E, q, str, kappa) ], kappa, M)
+
+ElGamal_decrypt_str(E, q, kappa, M, d, str) = decode_points(E, [ ElGamal_decrypt(E, d, e) | e<-code_str(E, q, str, kappa) ], kappa, M)
+
 test() = {
-  for(i=0,5,
-    n = randomprime(2^10)^2;
-    g = ffprimroot(ffgen(n));
-    Es = ellinit([g^3, g^4]);
-    if(Es != [],
+    M = 36;
+    kappa = 20;
+    n = 751;
+    \\n = randomprime(2^10)^2;
+    \\g = ffprimroot(ffgen(n));
+    \\Es = ellinit([g^3, g^4]);
+    Es=ellinit([-1,188],znprimroot(n));
+  
       print("Es = ", Es);
       P = [0]; \\ point à l'infini selon PARI/GP
       while(P == [0], P = random(Es));
       print("P = ", P);
       
       [Q, d] = ElGamal_gen_keys(Es, P);
-      msg = [0];
-      while(msg == [0], msg = random(Es));
+      msg = "STOP007";
       print("plaintext = ", msg);
-      ciphertext = ElGamal_encrypt(Es, Q, P, msg);
+      ciphertext = ElGamal_encrypt_str(Es, n, kappa, M, Q, P, msg);
       print("ciphertext = ", ciphertext);
-      print("decrypted = ", ElGamal_decrypt(Es, d, ciphertext));
-      success = (msg == ElGamal_decrypt(Es, d, ciphertext));
-      print("Success: ", success)));
+      print("decrypted = ", ElGamal_decrypt_str(Es, n, kappa, M, d, ciphertext));
+      success = (msg == ElGamal_decrypt_str(Es, n, kappa, M, d, ciphertext));
+      print("Success: ", success);
 }
+
 
 test()
