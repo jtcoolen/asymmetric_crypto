@@ -30,3 +30,6 @@ Rho-Pollard version factorisation et crible quadratique.
 
 - TP 8: dossier `elliptic_curves`
 Cardinalité d'une courbe elliptique (algos naif et utilisant Legendre). Multiplication binaire et 2^r-aire. Codage et décodage entier<->point sur courbe. Cryptosystème ElGamal.
+
+- dossier `exam_p_plus_1_williams`: algorithme en O(logR log^2 n) (parcours des bits de R, multiplications,additions et inversions mod n)
+Le calcul de la suite de Lucas produit un facteur de N=451889: 139
