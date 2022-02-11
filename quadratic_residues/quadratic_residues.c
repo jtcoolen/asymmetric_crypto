@@ -1,7 +1,10 @@
 #include <quadratic_residues.h>
+#include <assert.h>
 
+// Modulo sur entiers signés
 int64_t modulo(int64_t n, int64_t mod) { return (n % mod + mod) % mod; }
 
+// exponentiation square&multiply
 int64_t pow_mod(int64_t base, int64_t power, int64_t mod) {
   int64_t res = 1;
   while (power > 0) {
@@ -14,6 +17,8 @@ int64_t pow_mod(int64_t base, int64_t power, int64_t mod) {
   return res;
 }
 
+
+// Euclide étendu
 int64_t modular_inverse(int64_t a, int64_t b) {
   int64_t t, nt, r, nr, q, tmp;
   if (b < 0) {
@@ -47,56 +52,41 @@ int64_t modular_inverse(int64_t a, int64_t b) {
   return t;
 }
 
-int64_t jacobi(int64_t n, int64_t k) {
-  if (k > 0 && k % 2 != 1) {
-    return -1;
+// Symbole de Legendre
+short Legendre(uint64_t a, uint64_t p) {
+  assert(a > 0);
+  if (a == 1) {
+    return 1;
   }
-
-  int64_t tmp;
-
-  n %= k;
-  int64_t t = 1;
-
-  while (n != 0) {
-    while (n % 2 == 0) {
-      n >>= 1;
-      int64_t r = k % 8;
-      if (r == 3 || r == 5) {
-        t = -t;
-      }
-    }
-    tmp = n;
-    n = k;
-    k = tmp;
-    if (n % 4 == 3 && k % 4 == 3) {
-      t = -t;
-    }
-    n %= k;
+  if (a % 2 == 0) {
+    short pow = ((p * p - 1) / 8) % 2 == 0 ? 1 : -1;
+    return Legendre(a >> 1, p) * pow;
   }
-
-  if (k == 1) {
-    return t;
-  } else {
-    return 0;
-  }
+  // Loi de réciprocité quadratique
+  short pow = ((a - 1) * (p - 1) / 4) % 2 == 0 ? 1 : -1;
+  return Legendre(p % a, a) * pow;
 }
 
+// p premier
 int64_t shanks_tonelli(int64_t a, int64_t p) {
   if (a == 0) {
     return 0;
   }
 
-  if (jacobi(a, p) != 1) {
+  // véification des conditions de l'algorithme
+  // On attend que a soit un résidu quadratique modulo p, sinon échec
+  if (Legendre(a, p) != 1) {
     return -1;
   }
 
-  int64_t n = 2;
+  int64_t n = 2; // calcul de n non résidu quadratique mod p
   for (; n < p; n++) {
-    if (jacobi(n, p) == -1) {
+    if (Legendre(n, p) == -1) {
       break;
     }
   }
 
+  // p - 1 = 2^s * q
   int64_t q = p - 1;
   int64_t s = 0;
   while (q % 2 == 0) {
@@ -106,16 +96,21 @@ int64_t shanks_tonelli(int64_t a, int64_t p) {
 
   int64_t r = pow_mod(a, (q + 1) >> 1, p);
   int64_t y = (((r * r) % p) * (modular_inverse(a, p))) % p;
-  int64_t b = pow_mod(n, q, p);
+  int64_t b = pow_mod(n, q, p); // b^q mod p racine 2^s-ième de l'unité
   int64_t j = 0;
   int64_t b_pow = 0;
 
+  // Calcul de la puissance j de b telle que b^(2*j)*r^2/a = 1 mod p.
+  // Pour k>1, on suppose connu j=j_0+j_1*2,...,j_(k-1)*2^(k-1) tel que
+  // ((b^j)^2 * r^2 / a)^(2^(s-2-(k-1))) = 1 mod p.
+  // D'où j_k = 0 si ((b^j)^2 * r^2 / a)^(2^(s-2-k)) = 1 mod p, j_k=1 sinon.
+  // Le cas k=0 correspond au calcul de (r^2/a)^(2^(s-2)), et s'il n'est pas congru à 1 mod p alors j=1. 
   for (int64_t k = 0; k < s; k++) {
     b_pow = pow_mod(((pow_mod(b, j << 1, p) * y) % p), 1 << (s - 2 - k), p);
     if (b_pow != 1) {
       j ^= (1 << k);
     }
   }
-
+  // b^(2*j)*r^2/a = 1 mod p => (b^j*r)^2 = a mod p.
   return ((pow_mod(b, j, p) * r) % p);
 }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Détermine la taille de la base de nombres premiers
 size_t basis_len(unsigned long long P, mpz_t n) {
   size_t i = 0;
   mpz_t p;
@@ -19,14 +20,17 @@ size_t basis_len(unsigned long long P, mpz_t n) {
   return i - 1;
 }
 
-// numbers of the form t^2 - n
+// Nombres de la forme t^2 - n
 struct smooth_candidate {
-  mpz_t remaining_factor; // equals to 1 if smooth
+  mpz_t remaining_factor; // vaut 1 si t^2-n est B friable (B-smooth)
   mpz_t t;
   mpz_t number;
   char *basis_factors_parity;
 };
 
+
+// Macro pour accéder au coefficient (i,j) de la matrice M
+// (les coefficients de M sont stockés dans un tableau unidimensionnel
 #define MatCoeff(M, i, j, ncol) M[i * (ncol) + j]
 
 void swap_rows(char *matrix, size_t nrow, size_t ncol, size_t row1,
@@ -38,11 +42,11 @@ void swap_rows(char *matrix, size_t nrow, size_t ncol, size_t row1,
   }
 }
 
-// Gaussian elimination over GF(2)
+// Pivot de Gauss sur une matrice à coefficients dans F_2
 void gaussian_elimination(char *matrix, size_t nrow, size_t ncol) {
   for (int k = 0; k < nrow; k++) {
     if (MatCoeff(matrix, k, k, ncol) ==
-        0) { // Swap with pivot if current diagonal is 0
+        0) { // on permute la colonne courante avec une colonne pivot (avec un 1 sur la diagonale)
       for (int l = k; l < nrow; l++) {
         if (MatCoeff(matrix, l, k, ncol) == 1) {
           swap_rows(matrix, nrow, ncol, l, k);
@@ -50,9 +54,8 @@ void gaussian_elimination(char *matrix, size_t nrow, size_t ncol) {
         }
       }
     }
-    // For rows below pivot
+    // pour les lignes en dessous du pivot, on soustrait chaque ligne par la ligne du pivot
     for (int i = k + 1; i < nrow; i++) {
-      // If row can be subtracted, subtract every element (using xor)
       if (MatCoeff(matrix, i, k, ncol)) {
         for (int j = 0; j < ncol; j++)
           MatCoeff(matrix, i, j, ncol) ^= MatCoeff(matrix, k, j, ncol);
@@ -78,6 +81,7 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
     return;
   }
 
+  // Initialisation de la base de facteurs premiers <= P
   mpz_t p;
   mpz_init(p);
   size_t i = 0;
@@ -104,6 +108,8 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
   mpz_sqrt(sqrt_n, n);
   mpz_t *fptr;
 
+
+  // Initialisation de l'ensemble S (sieving interval) du crible
   for (size_t i = 0; i < A; i++) {
     fptr = &S[i].remaining_factor;
     S[i].basis_factors_parity = malloc(B_len * sizeof(char));
@@ -122,8 +128,7 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
     mpz_set(S[i].number, *fptr);
   }
 
-  // Sieving smooth numbers in the S range
-  // TODO: apply the optimisations seen in class
+  // Crible basique
   for (size_t i = 0; i < B_len; i++) {
     for (size_t j = 0; j < A; j++) {
       while (mpz_divisible_p(S[j].remaining_factor, B[i])) {
@@ -147,6 +152,9 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
 
   int done = 0;
 
+  // On considère |B|+1 vecteurs de parité d'un nombre B friable consécutifs dans la liste
+  // à partir du premier vecteur ayant cette propriété, puis du deuxième, etc... tant que cela
+  // ne permet pas de trouver un facteur non trivial de N. C'est le rôle de la variable offset.
   size_t offset = 0;
   while (!done) {
     size_t j = 0;
@@ -159,7 +167,8 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
       }
     }
 
-    if (offset == A - 1) {
+    // Eviter de sortir de l'intervalle du crible
+    if (offset == A - 1 - B_len) {
       return;
     }
 
@@ -168,6 +177,7 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
       return;
     }
 
+    // Pivot de Gauss sur la matrice base de vecteurs de parité
     transpose(smooth_num_vectors, B_len + 1, B_len, smooth_num_vectors2);
     gaussian_elimination(smooth_num_vectors2, B_len, B_len + 1);
 
@@ -178,7 +188,7 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
       }
     }
 
-    // Back substitution on upper triangular matrix
+    // "Back substitution"
     for (int k = f - 1; k >= 0; k--) {
       for (int i = k - 1; i >= 0; i--) {
         if (MatCoeff(smooth_num_vectors2, i, k, B_len + 1)) {
@@ -189,15 +199,18 @@ void quadratic_sieve(mpz_t n, unsigned long long P, unsigned long long A,
       }
     }
 
+    // Initialisation du noyau de la matrice base de vecteurs de parité
     char *nullspace = malloc((B_len + 1) * sizeof(*nullspace));
     memset(nullspace, 0, B_len + 1);
-    // First free variable is 1, rest are 0
     nullspace[f] = 1;
 
     for (int i = 0; i < f; i++) {
       nullspace[i] = MatCoeff(smooth_num_vectors2, i, f, (B_len + 1));
     }
 
+    // Le noyau calculé donne une relation de dépendance linéaire entre les vecteurs de parité
+    // On obtient u^2 = (t0 * t1 * ... * t|B|)^2 = (t0^2-n) * ... * (t|B|^2-n) mod n = v^2 mod n
+    // avec u!=v mod n d'où u-v!=0 mod n et le pgcd de u-v et n peut donner un facteur non trivial de n
     mpz_set_ui(u, 1);
     mpz_set_ui(v, 1);
     for (size_t i = 0; i < B_len + 1; i++) {

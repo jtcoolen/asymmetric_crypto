@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// f(x)=x^2+1 mod n
 void f(mpz_t r, mpz_t a, mpz_t n) {
   mpz_mul(r, a, a);
   mpz_add_ui(r, r, 1);
   mpz_mod(r, r, n);
 }
 
+// version à mémoire constante
 void factor_rho_pollard(mpz_t n, mpz_t factor) {
   mpz_t xk, xj, diff, gcd;
   mpz_inits(xk, xj, diff, gcd, NULL);
