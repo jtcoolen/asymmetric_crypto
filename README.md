@@ -24,7 +24,7 @@ Cryptosystèmes à clé publique: chiffrements et signatures RSA, ElGamal et DSA
 Algo Baby Step-Giant Step de Shanks, Rho de Pollard (GMP)
 
 - TP 6: dossier `primality_tests`
-Tests de Fermat et de Solovay-Strassen.
+Tests de Fermat, Solovay-Strassen et Miller-Rabin.
 
 - TP 7: dossier `factorization`
 Rho-Pollard version factorisation et crible quadratique.
