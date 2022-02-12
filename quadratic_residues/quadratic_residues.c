@@ -4,7 +4,7 @@
 // Modulo sur entiers signés
 int64_t modulo(int64_t n, int64_t mod) { return (n % mod + mod) % mod; }
 
-// exponentiation square&multiply
+// exponentiation square & multiply
 int64_t pow_mod(int64_t base, int64_t power, int64_t mod) {
   int64_t res = 1;
   while (power > 0) {
@@ -58,6 +58,10 @@ short Legendre(uint64_t a, uint64_t p) {
   if (a == 1) {
     return 1;
   }
+  // ici on a défini a non signé donc positif
+  //if (a == -1) {
+  //  return (((p - 1) >> 2) & 1) == 0 ? 1 : -1; // Legendre(-1,p) = (-1)^((p-1)/2) donc on se base sur la parité de l'exposant
+  //}
   if (a % 2 == 0) {
     short pow = ((p * p - 1) / 8) % 2 == 0 ? 1 : -1;
     return Legendre(a >> 1, p) * pow;
