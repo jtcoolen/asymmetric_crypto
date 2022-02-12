@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+
+// On représent un polynome à coefficients dans le corps fini Fp par
+// - le tableau de ses coefficients
+// - sa capacité (degré maximal autorisé)
+// - la caractéristique p
+// - son degré
 struct polynomial_in_Fp {
   int64_t *coefficients;
   uint64_t capacity;
@@ -10,10 +16,12 @@ struct polynomial_in_Fp {
   int64_t degree;
 };
 
+// Un corps fini de degré q=p^d (q éléments) est construit via le quotient de l'anneau principal Fp[x] par l'idéal maximal engendré par un polynome P de degré d irréductible sur Fp
+// Fq=Fp[x]/(P(x))
 struct finite_field_element {
-  struct polynomial_in_Fp *poly;
-  struct polynomial_in_Fp *mod;
-  uint64_t multiplicative_group_order;
+  struct polynomial_in_Fp *poly; // écriture d'un élément dans la Fp-base (1,a,...,a^(d-1)) de Fp[x]/(P) avec a racine de P
+  struct polynomial_in_Fp *mod; // polynome irréductible
+  uint64_t multiplicative_group_order; // ordre du groupe multiplicatif (Fq)*
 };
 
 struct polynomial_in_Fp *polynomial_in_Fp_new(uint64_t capacity,

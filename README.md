@@ -15,7 +15,7 @@ En premier lieu, il faut cloner le sous-module contenant une implémentation de 
 Bibliothèque d'opérations sur des corps premiers et finis.
 
 - TP 3: dossier `quadratic_residues`
-Symbole de Jacobi et algorithme de Shanks-Tonelli.
+Symbole de Legendre et algorithme de Shanks-Tonelli.
 
 - TP 4: dossier `public_key_cryptosystems`
 Cryptosystèmes à clé publique: chiffrements et signatures RSA, ElGamal et DSA (exploite le TP1 et la librairie GMP).

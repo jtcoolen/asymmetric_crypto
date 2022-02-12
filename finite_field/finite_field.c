@@ -3,12 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+// Cf. le fichier .h pour les définitions des structures
 static int64_t max(int64_t a, int64_t b) { return a > b ? a : b; }
 
 static int64_t min(int64_t a, int64_t b) { return a < b ? a : b; }
 
+// modulo sur des entiers signés
 static int64_t modulo(int64_t n, int64_t mod) { return (n % mod + mod) % mod; }
 
+// exponentiation rapide type square & multiply
 static uint64_t exponentiation(uint64_t base, uint64_t power) {
   uint64_t res = 1;
   while (power) {
@@ -21,6 +25,7 @@ static uint64_t exponentiation(uint64_t base, uint64_t power) {
   return res;
 }
 
+// teste si les coefficients de deux polynomes sont dans un corps de meme caractéristique
 static void check_matching_polynomial_in_Fp(const struct polynomial_in_Fp *pfe1,
                                        const struct polynomial_in_Fp *pfe2) {
   if (pfe1->characteristic != pfe2->characteristic) {
@@ -29,6 +34,7 @@ static void check_matching_polynomial_in_Fp(const struct polynomial_in_Fp *pfe1,
   }
 }
 
+// Initialise le polynome nul de Fp[X] étant donné une capacité (degré max) et la caractéristique p
 struct polynomial_in_Fp *polynomial_in_Fp_new(uint64_t capacity,
                                                     uint64_t characteristic) {
   struct polynomial_in_Fp *pfe = malloc(sizeof(struct polynomial_in_Fp));
@@ -51,6 +57,7 @@ struct polynomial_in_Fp *polynomial_in_Fp_new(uint64_t capacity,
   return pfe;
 }
 
+// supprime la structure associée
 void polynomial_in_Fp_free(struct polynomial_in_Fp *pfe) {
   if (pfe != NULL) {
     free(pfe->coefficients);
@@ -58,15 +65,17 @@ void polynomial_in_Fp_free(struct polynomial_in_Fp *pfe) {
   }
 }
 
+// TODO: On devrait retourner un entier négatif pour distinguer le degré des constantes (0) et de l'élément nul (-infini)
 int64_t polynomial_in_Fp_degree(const struct polynomial_in_Fp *pfe) {
   for (int i = pfe->capacity - 1; i >= 0; i--) {
     if (pfe->coefficients[i] != 0) {
       return i;
     }
   }
-  return 0; // TODO: negative degree for the zero polynomial
+  return 0;
 }
 
+// Retourne un polynome à coefficients dans Fp étant donné un tableau de coefficients
 struct polynomial_in_Fp *
 polynomial_in_Fp_from_array(int64_t *coefficients, uint64_t capacity,
                                uint64_t characteristic) {
@@ -82,11 +91,14 @@ polynomial_in_Fp_from_array(int64_t *coefficients, uint64_t capacity,
   return pfe;
 }
 
+
+// Copie d'un polynome dans Fp
 struct polynomial_in_Fp *
 polynomial_in_Fp_copy(const struct polynomial_in_Fp *pfe) {
   return polynomial_in_Fp_from_array(pfe->coefficients, pfe->capacity,
                                         pfe->characteristic);
 }
+
 
 void polynomial_in_Fp_print(const struct polynomial_in_Fp *pfe) {
   if (pfe->degree == 0) {
@@ -108,6 +120,8 @@ void polynomial_in_Fp_print(const struct polynomial_in_Fp *pfe) {
   }
 }
 
+
+// Somme de polynomes à coefficients dans Fp
 struct polynomial_in_Fp *
 polynomial_in_Fp_add(const struct polynomial_in_Fp *pfe1,
                         const struct polynomial_in_Fp *pfe2) {
@@ -184,6 +198,7 @@ polynomial_in_Fp_multiplication(const struct polynomial_in_Fp *pfe1,
   return pfe;
 }
 
+// Euclide étendu pour le calcul d'inverse mod b
 static int64_t modular_inverse(int64_t a, int64_t b) {
   int64_t t, nt, r, nr, q, tmp;
   if (b < 0) {
@@ -217,6 +232,7 @@ static int64_t modular_inverse(int64_t a, int64_t b) {
   return t;
 }
 
+// Calcul du reste dans Fp[x]
 void prime_field_element_remainder(struct polynomial_in_Fp *pfe,
                                    const struct polynomial_in_Fp *divisor) {
   check_matching_polynomial_in_Fp(pfe, divisor);
@@ -246,6 +262,7 @@ void prime_field_element_remainder(struct polynomial_in_Fp *pfe,
   remainder->degree = polynomial_in_Fp_degree(remainder);
 }
 
+// Division euclidienne dans Fp[x]
 void polynomial_in_Fp_division(const struct polynomial_in_Fp *pfe1,
                                   const struct polynomial_in_Fp *pfe2,
                                   struct polynomial_in_Fp **remainder,
@@ -286,6 +303,8 @@ void polynomial_in_Fp_division(const struct polynomial_in_Fp *pfe1,
   (*quotient)->degree = polynomial_in_Fp_degree(*quotient);
 }
 
+
+// PGCD de deux polynomes dans Fp
 struct polynomial_in_Fp *
 polynomial_in_Fp_gcd(const struct polynomial_in_Fp *pfe1,
                         const struct polynomial_in_Fp *pfe2) {
@@ -311,6 +330,8 @@ polynomial_in_Fp_gcd(const struct polynomial_in_Fp *pfe1,
   return r0;
 }
 
+
+// Euclide étendu dans Fp[x] (laborieux en raison des copies)
 struct polynomial_in_Fp *prime_field_element_gcd_extended(
     const struct polynomial_in_Fp *pfe1,
     const struct polynomial_in_Fp *pfe2,
@@ -373,6 +394,7 @@ struct polynomial_in_Fp *prime_field_element_gcd_extended(
   return old_r;
 }
 
+// Teste si deux éléments appartiennent au meme corps premier
 static void
 check_matching_finite_field(const struct finite_field_element *ffe1,
                             const struct finite_field_element *ffe2) {
@@ -413,6 +435,7 @@ finite_field_element_copy(const struct finite_field_element *ffe) {
   return ffe_copy;
 }
 
+// Multiplication dans Fq (on multiplie les polynomes dans Fp associés à ffe1 et ffe2 et on prend le reste de la division euclidienne avec le polynome (qui engendre l'idéal de la structure quotient)
 struct finite_field_element *
 finite_field_element_multiplication(const struct finite_field_element *ffe1,
                                     const struct finite_field_element *ffe2) {
@@ -431,6 +454,7 @@ finite_field_element_multiplication(const struct finite_field_element *ffe1,
   return res;
 }
 
+// cas particulier de la multiplication par une constante de Fp[x]
 struct polynomial_in_Fp *prime_field_element_scalar_multiplication(
     int64_t scalar, const struct polynomial_in_Fp *pfe) {
   struct polynomial_in_Fp *prod = polynomial_in_Fp_copy(pfe);
@@ -441,6 +465,7 @@ struct polynomial_in_Fp *prime_field_element_scalar_multiplication(
   return prod;
 }
 
+// Inverse dans Fq
 struct finite_field_element *
 finite_field_element_inverse(const struct finite_field_element *ffe) {
   struct finite_field_element *inverse =
@@ -450,9 +475,9 @@ finite_field_element_inverse(const struct finite_field_element *ffe) {
     exit(EXIT_FAILURE);
   }
   // ffe->poly*a + ffe->mod b = gcd => ffe->poly*a = gcd [mod ffe->mod],
-  // gcd invertible (constant) since ffe->mod is irreducible
+  // gcd est inversible (c'est une constante) donc ffe->mod est irreductible
   // ffe->poly*a*gcd^{-1} = 1 [mod ffe->mod]
-  // thus inverse->poly = a*gcd^{-1}
+  // donc inverse->poly = a*gcd^{-1}
   struct polynomial_in_Fp *a, *b, *gcd;
   gcd = prime_field_element_gcd_extended(ffe->poly, ffe->mod, &a, &b);
 
@@ -468,6 +493,7 @@ finite_field_element_inverse(const struct finite_field_element *ffe) {
   return inverse;
 }
 
+// On calcule ffe1/ffe2 (on multiplie ffe1 avec l'inverse de ffe2)
 struct finite_field_element *
 finite_field_element_division(const struct finite_field_element *ffe1,
                               const struct finite_field_element *ffe2) {
@@ -478,6 +504,8 @@ finite_field_element_division(const struct finite_field_element *ffe1,
   return div;
 }
 
+
+// ffe est générateur s'il est d'ordre l'ordre de (Fq)* soit q-1
 int finite_field_element_is_generator(const struct finite_field_element *ffe) {
   struct finite_field_element *pow = finite_field_element_new(ffe->poly, ffe->mod);
   uint64_t i = 1;
