@@ -98,9 +98,9 @@ int64_t shanks_tonelli(int64_t a, int64_t p) {
     s++;
   }
 
-  int64_t r = pow_mod(a, (q + 1) >> 1, p);
-  int64_t y = (((r * r) % p) * (modular_inverse(a, p))) % p;
-  int64_t b = pow_mod(n, q, p); // b^q mod p racine 2^s-ième de l'unité
+  int64_t r = pow_mod(a, (q + 1) >> 1, p); // O(log^3 p)
+  int64_t y = (((r * r) % p) * (modular_inverse(a, p))) % p; // O(log^2 p)
+  int64_t b = pow_mod(n, q, p); // b^q mod p racine 2^s-ième de l'unité, O(log^3 p)
   int64_t j = 0;
   int64_t b_pow = 0;
 
@@ -108,13 +108,15 @@ int64_t shanks_tonelli(int64_t a, int64_t p) {
   // Pour k>1, on suppose connu j=j_0+j_1*2,...,j_(k-1)*2^(k-1) tel que
   // ((b^j)^2 * r^2 / a)^(2^(s-2-(k-1))) = 1 mod p.
   // D'où j_k = 0 si ((b^j)^2 * r^2 / a)^(2^(s-2-k)) = 1 mod p, j_k=1 sinon.
-  // Le cas k=0 correspond au calcul de (r^2/a)^(2^(s-2)), et s'il n'est pas congru à 1 mod p alors j=1. 
+  // Le cas k=0 correspond au calcul de (r^2/a)^(2^(s-2)), et s'il n'est pas congru à 1 mod p alors j=1.
+  // Complexité : O(log p log^3 p) soit O(log^4 p)
   for (int64_t k = 0; k < s; k++) {
-    b_pow = pow_mod(((pow_mod(b, j << 1, p) * y) % p), 1 << (s - 2 - k), p);
+    b_pow = pow_mod(((pow_mod(b, j << 1, p) * y) % p), 1 << (s - 2 - k), p); // O(log^3 p)
     if (b_pow != 1) {
       j ^= (1 << k);
     }
   }
   // b^(2*j)*r^2/a = 1 mod p => (b^j*r)^2 = a mod p.
-  return ((pow_mod(b, j, p) * r) % p);
+  return ((pow_mod(b, j, p) * r) % p); // O(log p log^2 p)
+  // Donc la complexité totale est O(log^4 p)
 }
