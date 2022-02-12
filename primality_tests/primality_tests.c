@@ -12,7 +12,7 @@ int64_t randrange(int64_t lower, int64_t upper) {
     fprintf(stderr, "wrong range");
     exit(EXIT_FAILURE);
   }
-  int randomData = open("/dev/urandom", O_RDONLY);
+  int randomData = open("/dev/random", O_RDONLY);
   if (randomData < 0) {
     fprintf(stderr, "open");
     exit(EXIT_FAILURE);
@@ -21,9 +21,11 @@ int64_t randrange(int64_t lower, int64_t upper) {
   int64_t rd_uint;
   ssize_t result = read(randomData, rd, sizeof rd);
   if (result < 0) {
+    close(randomData);
     fprintf(stderr, "read");
     exit(EXIT_FAILURE);
   }
+  close(randomData);
   memcpy(&rd_uint, rd, 8);
   return (modulo(rd_uint, (upper - lower + 1))) + lower;
 }
@@ -98,6 +100,33 @@ int is_probably_prime_Solovay_Strassen(int64_t n, size_t k) {
   return 1;
 }
 
+int is_probably_prime_Miller_Rabin(int64_t n, size_t k) {
+  int s = 0;
+  int64_t t = n - 1;
+
+  while ((t & 1) == 0) {
+    t >>= 1;
+    s++;
+  }
+
+  size_t i = 0;
+  int64_t a, x;
+ test: {
+    i++;
+    if (i >= k) { return 1; }
+    a = randrange(2, n - 2);
+    x = pow_mod(a, t, n);
+    if (x == 1 || x == n - 1) { goto test; }
+    for (size_t j = 1; j < s; j++) {
+      x = pow_mod(x, 2, n);
+      if (x == n - 1) { goto test; }
+    }
+    return 0;
+  }
+
+  return 1;
+}
+
 int main(void) {
   printf("is_probably_prime_Fermat(113)=%d\n",
          is_probably_prime_Fermat(113, 100));
@@ -116,4 +145,13 @@ int main(void) {
          is_probably_prime_Solovay_Strassen(187, 100));
   printf("is_probably_prime_Solovay_Strassen(91)=%d\n",
          is_probably_prime_Solovay_Strassen(91, 100));
+
+  printf("is_probably_prime_Miller_Rabin(113)=%d\n",
+         is_probably_prime_Miller_Rabin(113, 100));
+  printf("is_probably_prime_Miller_Rabin(383)=%d\n",
+         is_probably_prime_Miller_Rabin(383, 100));
+  printf("is_probably_prime_Miller_Rabin(187)=%d\n",
+         is_probably_prime_Miller_Rabin(187, 100));
+  printf("is_probably_prime_Miller_Rabin(91)=%d\n",
+         is_probably_prime_Miller_Rabin(91, 100));
 }
