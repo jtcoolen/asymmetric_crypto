@@ -8,6 +8,7 @@ En premier lieu, il faut cloner le sous-module contenant une implémentation de 
 
 - TP 1: dossier `tp1`
   - Calcul de racine carré entière en O(log^3 n) opérations élémentaires (dans les faits en 0(log^2 n) car l'on opère sur des entiers de 64 bits où les opérations bits à bits s'effectuent en temps constant).
+  - Algorithme d'Euclide avec le plus petit reste
   - Algorithme de Karatsuba
 
 - TP 2: dossier `finite_field`
