@@ -25,6 +25,7 @@ char *get_key(const mpz_t a) {
 
 // Version O(sqrt(N)) avec N l'ordre du groupe cyclique
 // (O(n/t) avec t=sqrt(N))
+// Atteint la borne de Shoup (algo déterministe) mais complexité mémoire O(sqrt(N))!
 void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
                         mpz_t log) {
   mpz_t group_order_sqrt, group_order_sqrt_neg, a, j, gen_pow, h_pow;
