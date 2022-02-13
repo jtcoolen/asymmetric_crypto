@@ -70,6 +70,7 @@ void babystep_giantstep(mpz_t cyclic_group_order, mpz_t generator, mpz_t h,
     gmp_printf("\npairs: j= %Zd ; pow = %Zd \n", p->exponent, p->power);
   }*/
 
+  // gen_pow = g^(-t)=g^(-sqrt(N))
   mpz_neg(group_order_sqrt_neg, group_order_sqrt);
   mpz_powm(gen_pow, generator, group_order_sqrt_neg, cyclic_group_order);
 
